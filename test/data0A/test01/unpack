@@ -1,0 +1,237 @@
+#!/usr/bin/env perl
+use Getopt::Long;
+use Scalar::Util qw(looks_like_number);
+use File::Basename;
+my $dirname = dirname(__FILE__);
+if ($dirname ne "") {
+  chdir($dirname);
+}
+
+my $phenotypes = "-";
+my $genotypes = "-";
+my $beta = 0;
+my $se = 0;
+my $pval = 0;
+my $tstat = 0;
+my $real = 0;
+my $zero = 0;
+my $prec = 6;
+my $sci = 0;
+my $thresh = -1;
+my $greed = "";
+
+GetOptions("phenotypes=s" => \$phenotypes,
+  "genotypes=s" => \$genotypes,
+  "beta" => \$beta,
+  "se" => \$se,
+  "pval" => \$pval,
+  "tstat" => \$tstat,
+  "real" => \$real,
+  "noheader" => \$zero,
+  "precision=s" => \$prec,
+  "scientific" => \$sci,
+  "threshold=s" => \$thresh,
+  "greedysnps=s" => \$greed) or die("Error parsing command line arguments\n");
+
+if ($beta == 0 && $se == 0 && $pval == 0 && $tstat == 0) {
+  $beta = 1;
+  $se = 1;
+  $pval = 1;
+  $tstat = 1;
+}
+
+if ($sci) {
+  $format = "%0.${prec}e";
+} else {
+  $format = "%0.${prec}g";
+}
+
+# args: -phenotypes x -genotypes x
+# -beta x -se x -tstat x -pval x -real x 
+# -noheader x -prec x -scientific x
+# -thresh x
+# -greedy
+
+
+$D = 3;
+$size = -s "pval.bin";
+$size = $size/8;
+$N = $size/$D;
+open($FB, "<beta.bin");
+open($FS, "<se.bin");
+open($FT, "<tstat.bin");
+open($FP, "<pval.bin");
+binmode $FP;
+
+$custom = 0;
+if ($genotypes eq "-") {
+  @wg = 1 .. $N;
+} else {
+  $custom = 1;
+  $_ = $genotypes;
+  @cols = split /,/;
+  for $col (@cols) {
+    if (looks_like_number($col) && $col eq sprintf("%.0f", $col)) {
+      $wg[$#wg + 1] = $col;
+    } else {
+      $_ = $col;
+      @cs = split /\-/;
+      if ($cs[0] eq "") {
+        $cs[0] = 1;
+      }
+      if ($cs[1] eq "") {
+        $cs[1] = $N;
+      }
+      for $i ($cs[0] .. $cs[1]) {
+        $wg[$#wg + 1] = $i;
+      }
+    }
+  }
+}
+
+if ($phenotypes eq "-") {
+  @wp = 1 .. $D;
+} else {
+  $custom = 1;
+  $_ = $phenotypes;
+  @cols = split /,/;
+  for $col (@cols) {
+    if (looks_like_number($col) && $col eq sprintf("%.0f", $col)) {
+      $wp[$#wp + 1] = $col;
+    } else {
+      $_ = $col;
+      @cs = split /\-/;
+      if ($cs[0] eq "") {
+        $cs[0] = 1;
+      }
+      if ($cs[1] eq "") {
+        $cs[1] = $D;
+      }
+      for $i ($cs[0] .. $cs[1]) {
+        $wp[$#wp + 1] = $i;
+      }
+    }
+  }
+}
+
+if (!$zero) {
+  $first = 1;
+  for $j (@wp) {
+    if ($first) {
+      $first = 0;
+    } else {
+      print " ";
+    }
+    $j2 = sprintf("%04d", $j);
+    $last = 0;
+    if ($beta) {
+      $last = 1;
+      print "V${j2}_beta";
+    }
+    if ($se) {
+      if ($last) {
+        print " ";
+      }
+      $last = 1;
+      print "V${j2}_se";
+    }
+    if ($tstat) {
+      if ($last) {
+        print " ";
+      }
+      $last = 1;
+      print "V${j2}_tstat";
+    }
+    if ($pval) {
+      if ($last) {
+        print " ";
+      }
+      $last = 1;
+      if ($real) {
+        print "V${j2}_pval";
+      } else {
+        print "V${j2}_pval(-log10)";
+      } 
+    }
+  }
+  print "\n";
+}
+
+for $i (@wg) {
+  $first = 1;
+  $line = "";
+  if ($thresh > 0) {
+    $output = 0;
+  } else {
+    $output = 1;
+  }
+  for $j (@wp) {
+    if ($first) {
+      $first = 0;
+    } else {
+      $line .= " ";
+    }
+
+    my $z;
+    $last = 0;
+    if ($beta) {
+      $last = 1;
+      if ($custom) {
+        seek($FB, 8 * ($i - 1) * $D + 8 * ($j - 1), 0);
+      }
+      $x = read($FB, $z, 8);
+      $z = unpack("d", $z);
+      $line .= sprintf($format, "$z");
+    }
+
+    if ($se) {
+      if ($last) {
+        $line .= " ";
+      }
+      $last = 1;
+      if ($custom) {
+        seek($FS, 8 * ($i - 1) * $D + 8 * ($j - 1), 0);
+      }
+      $x = read($FS, $z, 8);
+      $z = unpack("d", $z);
+      $line .= sprintf($format, "$z");
+    }
+
+    if ($tstat) {
+      if ($last) {
+        $line .= " ";
+      }
+      $last = 1;
+      if ($custom) {
+        seek($FT, 8 * ($i - 1) * $D + 8 * ($j - 1), 0);
+      }
+      $x = read($FT, $z, 8);
+      $z = unpack("d", $z);
+      $line .= sprintf($format, "$z");
+    }
+
+    if ($custom) {
+      seek($FP, 8 * ($i - 1) * $D + 8 * ($j - 1), 0);
+    } 
+    $x = read($FP, $p, 8);
+    $p = unpack("d", $p);
+    if ($thresh > 0) {
+      if ($p >= $thresh) {
+        $output = 1;
+      }
+    }
+    if ($pval) {
+      if ($last) {
+        $line .= " ";
+      }
+      $last = 1;
+      if ($real) {
+        $p = exp(-log(10) * $p);
+      }
+      $line .= sprintf($format, "$p");
+    }
+  }
+  if ($output) {
+    print "$line\n";
+  }
+}
