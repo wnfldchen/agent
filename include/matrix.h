@@ -23,7 +23,7 @@ double get(t_matrix A, const int i, const int j);
 void zero(t_matrix A);
 t_matrix create(int N, int D);
 void destroy(t_matrix A);
-t_matrix load2(FILE *fp, int N, int M);
+t_matrix load2(FILE *fp, int N, int M0, int M);
 t_matrix load_file(FILE *fp);
 t_matrix load_string(char *s);
 t_matrix load(char *fname);

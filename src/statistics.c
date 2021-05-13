@@ -2,6 +2,7 @@
   
 #include "statistics.h"
 #include "matrix.h"
+#include <math.h>
 #include <mkl_lapack.h>
 #include <mkl_blas.h>
 #include <immintrin.h>
@@ -15,7 +16,11 @@
 // p-value of t-statistic with nu degrees of freedom
 double tcdf1m(double t, double nu) {
   double x = nu / (t * t + nu);
-  return gsl_sf_beta_inc(nu/2.0, 0.5, x);
+  if (isnan(x)) {
+    return NAN;
+  } else {
+    return gsl_sf_beta_inc(nu/2.0, 0.5, x);
+  }
 }
 
 #define LOG10 2.3025850929940459010936137929093092679977416992188
@@ -223,6 +228,9 @@ void regression(t_matrix g,               // input variables
 
       break;
     }
+
+    case -1:
+      break;
 
     case 1:
     default:

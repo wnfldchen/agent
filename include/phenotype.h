@@ -13,7 +13,7 @@ typedef struct {
 } t_phenotype;
 
 void load_phenotypes(char *fname, t_matrix *y, t_matrix *obs, t_matrix *denom);
-void load_phenotypes2(char *fname, t_matrix *y, t_matrix *obs, t_matrix *denom, int N, int D);
+void load_phenotypes2(char *fname, t_matrix *y, t_matrix *obs, t_matrix *denom, int N, int D0, int D);
 int numPhenotypes(char *);
 
 #endif

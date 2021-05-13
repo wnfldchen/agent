@@ -155,8 +155,14 @@ int agent_main(int argc, char** argv) {
             t_matrix denom;
             int N = numSamples(inputA1File);
             int M = numVariants(inputA1File);
-            int D = numPhenotypes(inputPhenotypeFile);
-            load_phenotypes2(inputPhenotypeFile, &y, &obs, &denom, N, D);
+            int D0 = numPhenotypes(inputPhenotypeFile);
+            int D;
+            if (D0 % (sysconf(_SC_PAGESIZE) / 8) == 0) {
+              D = D0;
+            } else {
+              D = (D0 / (sysconf(_SC_PAGESIZE) / 8) + 1) * (sysconf(_SC_PAGESIZE) / 8);
+            }
+            load_phenotypes2(inputPhenotypeFile, &y, &obs, &denom, N, D0, D);
             t_phenotype phenos;
             yt = create(D, N);
             for (int i = 0; i < N; i++) {
@@ -171,9 +177,9 @@ int agent_main(int argc, char** argv) {
             if (D <= 0) {
               error("No phenotypes provided");
             }
-            if ((D * 8) % sysconf(_SC_PAGESIZE) != 0) {
-              error("Number of phenotypes must be a multiple of the page size divided by 8");
-            }
+            //if ((D * 8) % sysconf(_SC_PAGESIZE) != 0) {
+            //  error("Number of phenotypes must be a multiple of the page size divided by 8");
+            //}
             if (N <= 2) {
               error("Phenotypes describe two or fewer subjects");
             }
@@ -185,7 +191,7 @@ int agent_main(int argc, char** argv) {
               error("Error opening file");
             }
             free(fi_name);
-            fprintf(fi_file, "D = %d\nM = %d\nN = %d\n", D, M, N);
+            fprintf(fi_file, "D = %d\nD0 = %d\nM = %d\nN = %d\n", D, D0, M, N);
             fclose(fi_file);
 
             char *fu_list[] = { outputGwasDirectory, "unpack", NULL };

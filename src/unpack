@@ -56,9 +56,13 @@ if ($sci) {
 open($FD, "<info.txt");
 $D = <$FD>;
 chomp($D);
-close($FD);
 @D = split / = /, $D;
 $D = $D[1];
+$D0 = <$FD>;
+chomp($D0);
+@D0 = split / = /, $D0;
+$D0 = $D0[1];
+close($FD);
 $size = -s "pval.bin";
 $size = $size/8;
 $N = $size/$D;
@@ -95,7 +99,10 @@ if ($genotypes eq "-") {
 }
 
 if ($phenotypes eq "-") {
-  @wp = 1 .. $D;
+  if ($D != $D0) {
+    $custom = 1;
+  }
+  @wp = 1 .. $D0;
 } else {
   $custom = 1;
   $_ = $phenotypes;
@@ -110,7 +117,7 @@ if ($phenotypes eq "-") {
         $cs[0] = 1;
       }
       if ($cs[1] eq "") {
-        $cs[1] = $D;
+        $cs[1] = $D0;
       }
       for $i ($cs[0] .. $cs[1]) {
         $wp[$#wp + 1] = $i;
