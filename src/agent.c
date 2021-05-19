@@ -1,5 +1,6 @@
 // Copyright 2019, Winfield Chen and Lloyd T. Elliott.
 
+#define _GNU_SOURCE
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <stdio.h>
@@ -7,6 +8,9 @@
 #include <math.h>
 #include <assert.h>
 #include <pthread.h>
+#include <errno.h>
+#include <string.h>
+#include <fcntl.h>
 #include "threadpipe.h"
 #include "writethread.h"
 #include "computethread.h"
@@ -224,8 +228,12 @@ int agent_main(int argc, char** argv) {
             }
             free(fb_name);
             int z;
-            z = ftruncate(fileno(fb), D * M * sizeof(double));
+            off64_t size = (off64_t)D * (off64_t)M * (off64_t)sizeof(double);
+            printf("%d %d %d %lld %d\n", D, M, sizeof(double), (off64_t)D*(off64_t)M*(off64_t)sizeof(double), sizeof(off64_t));
+            printf("size = %lld\n", size);
+            z = posix_fallocate64(fileno(fb), 0, size);
             if (z != 0) {
+              fprintf(stderr, "%d %d: %s\n", z, errno, strerror(errno));
               error("Could not resize output file");
             }
             fclose(fb);
@@ -236,7 +244,7 @@ int agent_main(int argc, char** argv) {
               error("Error opening file");
             }
             free(fs_name);
-            z = ftruncate(fileno(fs), D * M * sizeof(double));
+            z = posix_fallocate64(fileno(fs), 0, size);
             if (z != 0) {
               error("Could not resize output file");
             }
@@ -248,7 +256,7 @@ int agent_main(int argc, char** argv) {
               error("Error opening file");
             }
             free(ft_name);
-            z = ftruncate(fileno(ft), D * M * sizeof(double));
+            z = posix_fallocate64(fileno(ft), 0, size);
             if (z != 0) {
               error("Could not resize output file");
             }
@@ -260,7 +268,7 @@ int agent_main(int argc, char** argv) {
               error("Error opening file");
             }
             free(fp_name);
-            z = ftruncate(fileno(fp), D * M * sizeof(double));
+            z = posix_fallocate64(fileno(fp), 0, size);
             if (z != 0) {
               error("Could not resize output file");
             }

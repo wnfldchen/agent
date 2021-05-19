@@ -3,6 +3,7 @@
 #define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/mman.h>
 #include <stddef.h>
 #include <pthread.h>
 #include <string.h>
@@ -143,20 +144,22 @@ void *compute_thread_start_routine(void *arg)
             }
 
             
+
             regression(g, y, yt, obs, denom, beta, se, tstat, pval, b1, w1, w2);
+
 
             for (int ii = 0; ii < M; ii++) {
                 int variant = variants[ii];
                 size_t length = D * sizeof(double);
                 assert(variant >= 0);
-                size_t offset = variant * length;
+                off64_t offset = (off64_t)variant * (off64_t)length;
 
                 int fb = open(fb_name, O_RDWR, S_IRUSR | S_IWUSR);
                 if (fb < 0) {
                     error("Could not open output file");
                 }
                 char *fb_addr =
-                    mmap(NULL, length, PROT_WRITE, MAP_SHARED, fb,
+                    mmap64(NULL, length, PROT_WRITE, MAP_SHARED, fb,
                          offset);
                 if (fb_addr == MAP_FAILED) {
                     error("Could not memory map output file");
@@ -174,7 +177,7 @@ void *compute_thread_start_routine(void *arg)
                     error("Could not open output file");
                 }
                 char *fs_addr =
-                    mmap(NULL, length, PROT_WRITE, MAP_SHARED, fs,
+                    mmap64(NULL, length, PROT_WRITE, MAP_SHARED, fs,
                          offset);
                 if (fs_addr == MAP_FAILED) {
                     error("Could not memory map output file");
@@ -190,7 +193,7 @@ void *compute_thread_start_routine(void *arg)
                     error("Could not open output file");
                 }
                 char *ft_addr =
-                    mmap(NULL, length, PROT_WRITE, MAP_SHARED, ft,
+                    mmap64(NULL, length, PROT_WRITE, MAP_SHARED, ft,
                          offset);
                 if (ft_addr == MAP_FAILED) {
                     error("Could not memory map output file");
@@ -206,7 +209,7 @@ void *compute_thread_start_routine(void *arg)
                     error("Could not open output file");
                 }
                 char *fp_addr =
-                    mmap(NULL, length, PROT_WRITE, MAP_SHARED, fp,
+                    mmap64(NULL, length, PROT_WRITE, MAP_SHARED, fp,
                          offset);
                 if (fp_addr == MAP_FAILED) {
                     error("Could not memory map output file");
