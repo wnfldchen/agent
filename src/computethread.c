@@ -250,8 +250,7 @@ void *compute_thread_start_routine(void *arg)
                 }
             }
         }
-        batch_size -= batch_size - i;
-        append_threadpipe(pipe_out, variants, (void **) tasks, batch_size);
+        append_threadpipe(pipe_out, variants, (void **) tasks, i);
     }
     destroy_buf(variants);
     destroy_buf(tasks);

@@ -12,6 +12,7 @@ main.pdf
 main.synctex.gz
 supmat.pdf
 agent
+agent-static
 test/test
 opt/bin/
 opt/cmocka-1.1.5/
