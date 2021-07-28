@@ -12,6 +12,7 @@
 #include "writethread.h"
 #include "write.h"
 #include "memman.h"
+#include "bgenformat.h"
 // writethread.c
 
 void* write_thread_start_routine(void* arg) {
@@ -53,9 +54,20 @@ void* write_thread_start_routine(void* arg) {
                     write_vid_txt(outputFile, &task->vid);
                     write_prob_txt(outputFile, &task->prob.uncompressed, is_agent);
                     break;
-                case ACT_GWA1:
+                case ACT_GWA1: {
+                    VariantIdData *vid = &task->vid;
+                    UncompressedProbabilityData *prob = &task->prob.uncompressed;
+                    destroy_short_field(vid->id);
+                    destroy_short_field(vid->rsid);
+                    destroy_short_field(vid->chr);
+                    for (uint16_t i = 0; i < vid->k; i += 1) {
+                        destroy_long_field(vid->alleles[i]);
+                    }
+                    destroy_buf(vid->alleles);
+                    destroy_buf(prob->ploidy);
+                    destroy_buf(prob->data);
                     break;
-
+                }
                 default:
                     assert(0);
                     break;
