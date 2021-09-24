@@ -19,6 +19,7 @@ void* read_thread_start_routine(void* arg) {
 	int is_zstd = args->is_zstd;
 	int is_agent = args->is_agent;
 	uint32_t batch_size = 500; // REMARK: Must be the same as other batch_size variables
+    uint32_t buffer_factor = 2;
 	uint32_t variant = 0;
 	if (m >= batch_size) {
 	    size_t* variants = create_buf(sizeof(variants[0]), batch_size);
@@ -38,6 +39,7 @@ void* read_thread_start_routine(void* arg) {
              * we don't need to track sizeof(*task).
              * We repurpose the size parameter to id tasks.
              */
+            wait_threadpipe(pipe_out, buffer_factor * batch_size);
             append_threadpipe(pipe_out, variants, (void**)tasks, batch_size);
         }
         destroy_buf(variants);

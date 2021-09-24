@@ -29,6 +29,8 @@ void close_threadpipe(ThreadPipe* pipe);
 
 void destroy_threadpipe(ThreadPipe* pipe);
 
+int wait_threadpipe(ThreadPipe* pipe, size_t n);
+
 int push_threadpipe(ThreadPipe* pipe, size_t size, void* data);
 
 int append_threadpipe(ThreadPipe* pipe, size_t* sizes, void** datas, size_t n);

@@ -26,6 +26,21 @@ void destroy_threadpipe(ThreadPipe* pipe) {
 	pthread_cond_destroy(&pipe->cond);
 }
 
+int wait_threadpipe(ThreadPipe* pipe, size_t n) {
+    pthread_mutex_lock(&pipe->mutex);
+    while (
+            total_sizeof_linked_list(&pipe->list) > n
+            && pipe->state == THREADPIPE_OPEN) {
+        pthread_cond_wait(&pipe->cond, &pipe->mutex);
+    }
+    int state = pipe->state;
+    pthread_mutex_unlock(&pipe->mutex);
+    if (state == THREADPIPE_CLOSED) {
+        return THREADPIPE_OP_CLOSED;
+    }
+    return THREADPIPE_OP_SUCCESS;
+}
+
 int push_threadpipe(ThreadPipe* pipe, size_t size, void* data) {
 	Node* node = create_node(NULL, size, data);
 	pthread_mutex_lock(&pipe->mutex);

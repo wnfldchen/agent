@@ -35,6 +35,7 @@ void *compute_thread_start_routine(void *arg)
 {
 
     uint32_t batch_size = 500;  // REMARK: Must be the same as other batch_size variables
+    uint32_t buffer_factor = 2;
     ComputeThreadArgs *args = arg;
     AgentHeader* agentHeader = args->agentHeader;
     ThreadPipe *pipe_in = args->pipe_in;
@@ -250,6 +251,7 @@ void *compute_thread_start_routine(void *arg)
                 }
             }
         }
+        wait_threadpipe(pipe_out, buffer_factor * batch_size);
         append_threadpipe(pipe_out, variants, (void **) tasks, i);
     }
     destroy_buf(variants);
