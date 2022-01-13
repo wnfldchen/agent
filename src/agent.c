@@ -229,8 +229,10 @@ int agent_main(int argc, char** argv) {
             free(fb_name);
             int z;
             off64_t size = (off64_t)D * (off64_t)M * (off64_t)sizeof(double);
-            printf("%d %d %d %lld %d\n", D, M, sizeof(double), (off64_t)D*(off64_t)M*(off64_t)sizeof(double), sizeof(off64_t));
-            printf("size = %lld\n", size);
+            // printf("%d %d %d %lld %d\n", D, M, sizeof(double), (off64_t)D*(off64_t)M*(off64_t)sizeof(double), sizeof(off64_t));
+            // printf("size = %lld\n", size);
+            system("echo -n $(date)");
+            printf(" Allocating beta.bin\n");
             z = posix_fallocate64(fileno(fb), 0, size);
             if (z != 0) {
               fprintf(stderr, "%d %d: %s\n", z, errno, strerror(errno));
@@ -244,6 +246,8 @@ int agent_main(int argc, char** argv) {
               error("Error opening file");
             }
             free(fs_name);
+            system("echo -n $(date)");
+            printf(" Allocating se.bin\n");
             z = posix_fallocate64(fileno(fs), 0, size);
             if (z != 0) {
               error("Could not resize output file");
@@ -256,6 +260,8 @@ int agent_main(int argc, char** argv) {
               error("Error opening file");
             }
             free(ft_name);
+            system("echo -n $(date)");
+            printf(" Allocating tstat.bin\n");
             z = posix_fallocate64(fileno(ft), 0, size);
             if (z != 0) {
               error("Could not resize output file");
@@ -268,6 +274,8 @@ int agent_main(int argc, char** argv) {
               error("Error opening file");
             }
             free(fp_name);
+            system("echo -n $(date)");
+            printf(" Allocating pval.bin\n");
             z = posix_fallocate64(fileno(fp), 0, size);
             if (z != 0) {
               error("Could not resize output file");
@@ -281,6 +289,12 @@ int agent_main(int argc, char** argv) {
             loop_each_variant(inputFile, outputFile, outputGwasDirectory, &phenos, NULL, agentHeader, computeThreads, action);
             destroy_agent_header(agentHeader);
             close_files(inputFile, outputFile);
+            destroy(*phenos.y);
+            destroy(*phenos.yt);
+            destroy(*phenos.obs);
+            destroy(*phenos.denom);
+            system("echo -n $(date)");
+            printf(" Allocation complete\n");
             break;
           }
 
@@ -323,5 +337,7 @@ int agent_main(int argc, char** argv) {
             break;
           }
         }
+        system("echo -n $(date)");
+        printf(" Done\n");
 	return 0;
 }

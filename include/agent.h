@@ -3,4 +3,6 @@
 #pragma once
 // agent.h
 
+#define BATCH_SIZE 500
+
 int agent_main(int argc, char **argv);

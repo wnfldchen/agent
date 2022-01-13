@@ -6,6 +6,8 @@
 #include <stdio.h>
 #include <pthread.h>
 #include <assert.h>
+
+#include "agent.h"
 #include "options.h"
 #include "threadpipe.h"
 #include "computetask.h"
@@ -26,7 +28,7 @@ void* write_thread_start_routine(void* arg) {
 	assert(action == ACT_BGA1 || action == ACT_DOSE || action == ACT_GWA1);
 	ComputeTask** tasks = create_buf(sizeof(tasks[0]), m);
 
-    uint32_t batch_size = 500; // REMARK: Must be the same as other batch_size variables
+    uint32_t batch_size = BATCH_SIZE; // REMARK: Must be the same as other batch_size variables
     size_t* variants_batch = create_buf(sizeof(variants_batch[0]), batch_size);
     ComputeTask** tasks_batch = create_buf(sizeof(tasks_batch[0]), batch_size);
 

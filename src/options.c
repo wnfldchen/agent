@@ -23,11 +23,10 @@
 #endif
 
 void print_version() {
+  printf("agent 001 build " GIT_VERSION " " BUILD_DATE "\n");
+  printf("  https://agent.engineering/\n");
+  printf("  Copyright 2021, Winfield Chen and Lloyd T. Elliott.\n");
   printf("\n");
-  printf("   ┌───────┐   AGENT 001 build " GIT_VERSION " " BUILD_DATE ".\n");
-  printf("   │ AGENT │   https://agent.engineering/\n");
-  printf("   └───────┘   Copyright 2019, Winfield Chen and Lloyd T. Elliott.\n");
-  printf("\n\n");
 }
 
 void read_options(

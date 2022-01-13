@@ -17,6 +17,8 @@
 #include <stdint.h>
 #include <assert.h>
 #include <memman.h>
+
+#include "agent.h"
 #include "agentformat.h"
 #include "file.h"
 #include "options.h"
@@ -34,7 +36,7 @@
 void *compute_thread_start_routine(void *arg)
 {
 
-    uint32_t batch_size = 500;  // REMARK: Must be the same as other batch_size variables
+    uint32_t batch_size = BATCH_SIZE;  // REMARK: Must be the same as other batch_size variables
     uint32_t buffer_factor = 2;
     ComputeThreadArgs *args = arg;
     AgentHeader* agentHeader = args->agentHeader;
@@ -107,6 +109,12 @@ void *compute_thread_start_routine(void *arg)
 
         if (action == ACT_GWA1) {
             for (; i < batch_size && tasks[i] != NULL; i++) {
+                size_t variant = variants[i];
+                if (variant % 10000 == 0 && variant > 0) {
+                  system("echo -n $(date)");
+                  printf(" Processing variant %lu\n", (unsigned long)variant);
+                }
+
                 ComputeTask *task = tasks[i];
                 if (is_zstd) {
                     zstd_decompress(task);

@@ -5,6 +5,8 @@
 #include <stdio.h>
 #include <pthread.h>
 #include <memman.h>
+
+#include "agent.h"
 #include "threadpipe.h"
 #include "computetask.h"
 #include "readthread.h"
@@ -18,7 +20,7 @@ void* read_thread_start_routine(void* arg) {
 	uint32_t m = args->m;
 	int is_zstd = args->is_zstd;
 	int is_agent = args->is_agent;
-	uint32_t batch_size = 500; // REMARK: Must be the same as other batch_size variables
+	uint32_t batch_size = BATCH_SIZE; // REMARK: Must be the same as other batch_size variables
     uint32_t buffer_factor = 2;
 	uint32_t variant = 0;
 	if (m >= batch_size) {
